@@ -6,48 +6,21 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
-	"strings"
+
+	"github.com/julienschmidt/httprouter"
 )
-
-var SuccessJson = map[string]interface{}{}
-var SuccessKey = ""
-var ErrorJson = map[string]interface{}{}
-var ErrorKey = ""
-var ErrorCodeKey = ""
-
-var ErrorHandler = func(c *Context, err error) {
-	if c.StatusCode == 0 {
-		c.StatusCode = 500
-	}
-	c.Error(c.StatusCode, err.Error())
-}
-
-type Map map[string]interface{}
-
-type Handler func(*Context) error
-
-func (h Handler) NewHttpHandler() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		ctx := NewContext(w, r)
-		err := h(ctx)
-		if err != nil {
-			ErrorHandler(ctx, err)
-		}
-	}
-}
-
-func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	handle := h.NewHttpHandler()
-	handle(w, r)
-}
 
 type Context struct {
 	Res        http.ResponseWriter
 	Req        *http.Request
-	StatusCode int
 	urlValue   url.Values
 	formValue  url.Values
+	StatusCode int
 	done       bool
+	m          Map
+	params     map[string]string
+
+	routerParamsParsed bool
 }
 
 func NewContext(w http.ResponseWriter, r *http.Request) *Context {
@@ -56,10 +29,33 @@ func NewContext(w http.ResponseWriter, r *http.Request) *Context {
 		Req:       r,
 		urlValue:  nil,
 		formValue: nil,
+		m:         make(Map),
+		params:    make(map[string]string),
 	}
 }
 
+func (c *Context) Set(k string, v interface{}) {
+	c.m[k] = v
+}
+
+func (c *Context) Get(k string) (interface{}, bool) {
+	v, ok := c.m[k]
+	return v, ok
+}
+
 // Request Method
+
+func (c *Context) Params(k string) string {
+	if !c.routerParamsParsed {
+		ctx := c.Req.Context()
+		ps := httprouter.ParamsFromContext(ctx)
+		for _, p := range ps {
+			c.params[p.Key] = p.Value
+		}
+		c.routerParamsParsed = true
+	}
+	return c.params[k]
+}
 
 func (c *Context) Exists(k string) bool {
 	_ = c.Query("")
@@ -136,17 +132,6 @@ func (c *Context) URI() string {
 
 func (c *Context) Host() string {
 	return c.Req.Host
-}
-
-func (c *Context) IsAjaxReq() bool {
-	s := c.Req.Header.Get("HTTP_X_REQUESTED_WITH")
-	s = strings.ToLower(s)
-	return s == "xmlhttprequest"
-}
-
-func (c *Context) AcceptJson() bool {
-	accept := c.Req.Header.Get("Accept")
-	return strings.Contains(accept, "application/json")
 }
 
 // Response Method
