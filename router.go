@@ -1,8 +1,10 @@
 package ctx
 
 import (
+	"context"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/julienschmidt/httprouter"
 )
@@ -12,6 +14,7 @@ type Router struct {
 	r    *httprouter.Router
 	prev Handlers
 	next Handlers
+	s    *server
 }
 
 // New returns a new router.
@@ -20,6 +23,7 @@ func New() *Router {
 		r:    httprouter.New(),
 		prev: nil,
 		next: nil,
+		s:    nil,
 	}
 }
 
@@ -30,7 +34,24 @@ func (r *Router) Run(addr ...string) {
 		port = addr[0]
 	}
 	log.Printf("%s listen at%s.\n", "[ctx]", port)
-	log.Fatal("%s server error: %v", "[ctx]", http.ListenAndServe(port, r.r))
+	if r.s == nil {
+		r.s = newServer(port, r.r)
+	}
+	if err := r.s.s.ListenAndServe(); err != http.ErrServerClosed {
+		log.Fatal("%s server error: %v", "[ctx]", err)
+	}
+}
+
+// Shutdown shutdown the server gracefully, when t <= 0, it wait for all request
+// finished. Othercase it will shutdown right after t.
+func (r *Router) Shutdown(t time.Duration) {
+	if t <= 0 {
+		r.s.s.Shutdown(context.Background())
+		return
+	}
+	c, cancel := context.WithTimeout(context.Background(), t)
+	r.s.s.Shutdown(c)
+	cancel()
 }
 
 // Use is a alias of Prev, it register `hs` as a banch of prev handler.
