@@ -38,7 +38,7 @@ func (r *Router) Run(addr ...string) {
 		r.s = newServer(port, r.r)
 	}
 	if err := r.s.s.ListenAndServe(); err != http.ErrServerClosed {
-		log.Fatal("%s server error: %v", "[ctx]", err)
+		log.Fatalf("%s server error: %v", "[ctx]", err)
 	}
 }
 
