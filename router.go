@@ -23,14 +23,14 @@ func New() *Router {
 	}
 }
 
-// Run runs the app.
+// Run runs the app, default port is '8080'.
 func (r *Router) Run(addr ...string) {
 	port := ":8080"
 	if len(addr) != 0 {
 		port = addr[0]
 	}
 	log.Printf("%s listen at%s.\n", "[ctx]", port)
-	http.ListenAndServe(port, r.r)
+	log.Fatal("%s server error: %v", "[ctx]", http.ListenAndServe(port, r.r))
 }
 
 // Use is a alias of Prev, it register `hs` as a banch of prev handler.

@@ -1,5 +1,5 @@
 # CTX
-a Go web framework.
+A Go web framework.
 
 ## Install
 ```bash
