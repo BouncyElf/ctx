@@ -2,23 +2,37 @@ package ctx
 
 import (
 	"encoding/json"
-	"fmt"
 	"mime/multipart"
 	"net/http"
 	"net/url"
-	"runtime"
 	"strconv"
 	"strings"
 )
 
+var SuccessJson = map[string]interface{}{}
+var SuccessKey = ""
+var ErrorJson = map[string]interface{}{}
+var ErrorKey = ""
+var ErrorCodeKey = ""
+
+var ErrorHandler = func(c *Context, err error) {
+	if c.StatusCode == 0 {
+		c.StatusCode = 500
+	}
+	c.Error(c.StatusCode, err.Error())
+}
+
 type Map map[string]interface{}
 
-type Handler func(*Context)
+type Handler func(*Context) error
 
 func (h Handler) NewHttpHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := NewContext(w, r)
-		h(ctx)
+		err := h(ctx)
+		if err != nil {
+			ErrorHandler(ctx, err)
+		}
 	}
 }
 
@@ -28,11 +42,12 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 type Context struct {
-	Res       http.ResponseWriter
-	Req       *http.Request
-	urlValue  url.Values
-	formValue url.Values
-	done      bool
+	Res        http.ResponseWriter
+	Req        *http.Request
+	StatusCode int
+	urlValue   url.Values
+	formValue  url.Values
+	done       bool
 }
 
 func NewContext(w http.ResponseWriter, r *http.Request) *Context {
@@ -136,49 +151,59 @@ func (c *Context) AcceptJson() bool {
 
 // Response Method
 
-func (c *Context) Json(data interface{}) {
+func (c *Context) Json(data interface{}) error {
 	if ct := c.Res.Header().Get("Content-Type"); ct == "" {
 		c.Res.Header().Set("Content-Type", "application/json")
 	}
 	j, err := json.Marshal(data)
 	if err != nil {
-		_, f, l, _ := runtime.Caller(0)
-		c.Write([]byte(fmt.Sprintf("%s:line %d, json marshal error:%v", f, l, err)))
-		return
+		return err
 	}
-	c.Write(j)
+	return c.Write(j)
 }
 
-func (c *Context) Redirect(location string, code ...int) {
-	// TODO
+func (c *Context) Redirect(location string, code ...int) error {
+	if len(code) != 0 {
+		c.SetStatusCode(code[0])
+	} else {
+		c.SetStatusCode(303)
+	}
+	c.done = true
+	http.Redirect(c.Res, c.Req, location, c.StatusCode)
+	return nil
 }
 
-func (c *Context) Success(data interface{}) {
-	c.Json(map[string]interface{}{
-		"errno":  0,
-		"errmsg": "",
-		"data":   data,
-	})
+func (c *Context) SetStatusCode(code int) {
+	c.StatusCode = code
+	c.Res.WriteHeader(code)
 }
 
-func (c *Context) Error(code int, msg string) {
-	c.Json(map[string]interface{}{
-		"errno":  code,
-		"errmsg": msg,
-		"data":   "",
-	})
+func (c *Context) Success(data interface{}) error {
+	c.SetStatusCode(200)
+	SuccessJson[SuccessKey] = data
+	return c.Json(SuccessJson)
 }
 
-func (c *Context) String(s string) {
-	c.Write([]byte(s))
+func (c *Context) Error(code int, msg string) error {
+	ErrorJson[ErrorCodeKey] = code
+	ErrorJson[ErrorKey] = msg
+	return c.Json(ErrorJson)
 }
 
-func (c *Context) Write(data []byte) {
+func (c *Context) String(s string) error {
+	return c.Write([]byte(s))
+}
+
+func (c *Context) Write(data []byte) error {
 	if ct := c.Res.Header().Get("Content-Type"); ct == "" {
 		c.Res.Header().Set("Content-Type", "text/plain")
 	}
 	if !c.done {
+		if c.StatusCode == 0 {
+			c.SetStatusCode(200)
+		}
 		c.Res.Write(data)
 		c.done = true
 	}
+	return nil
 }
