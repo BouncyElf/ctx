@@ -86,11 +86,10 @@ func (c *Context) Query(k string) string {
 	} else {
 		if c.formValue == nil || c.urlValue == nil {
 			c.Req.ParseForm()
-			c.formValue = c.Req.PostForm
-			c.urlValue = c.Req.Form
+			c.formValue = c.Req.Form
+			c.urlValue = c.Req.URL.Query()
 		}
-		v := c.formValue.Get(k)
-		if v != "" {
+		if v := c.formValue.Get(k); v != "" {
 			return v
 		}
 		return c.urlValue.Get(k)
@@ -132,8 +131,17 @@ func (c *Context) SetCookie(cookie *http.Cookie) {
 }
 
 // File returns the formfile with the specific name.
-func (c *Context) File(name string) (multipart.File, *multipart.FileHeader, error) {
+func (c *Context) File(name string) (
+	multipart.File,
+	*multipart.FileHeader,
+	error,
+) {
 	return c.Req.FormFile(name)
+}
+
+// RemoteAddr returns RemoteAddr of the current request.
+func (c *Context) RemoteAddr() string {
+	return c.Req.RemoteAddr
 }
 
 // Method returns the method of the current request.
@@ -149,6 +157,11 @@ func (c *Context) URI() string {
 // Host returns the host of the current request.
 func (c *Context) Host() string {
 	return c.Req.Host
+}
+
+// Path returns the uri without query string of the current request.
+func (c *Context) Path() string {
+	return c.Req.URL.Path
 }
 
 // Response Method
@@ -183,8 +196,8 @@ func (c *Context) SetStatusCode(code int) {
 	c.Res.WriteHeader(code)
 }
 
-// Success response the current request with the specific format of data. The type
-// is json, and you can change format by setting ctx.SuccessJson.
+// Success response the current request with the specific format of data. The
+// type is json, and you can change format by setting ctx.SuccessJson.
 func (c *Context) Success(data interface{}) error {
 	c.SetStatusCode(200)
 	SuccessJson[SuccessKey] = data
