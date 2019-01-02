@@ -129,11 +129,15 @@ func (r *Router) push(method, path string, h Handler, mhs ...Handler) {
 				if err := h(c); err != nil {
 					ErrorHandler(c, err)
 					return nil
+				} else if c.done {
+					return nil
 				}
 			}
 			for _, h := range mhs {
 				if err := h(c); err != nil {
 					ErrorHandler(c, err)
+					return nil
+				} else if c.done {
 					return nil
 				}
 			}
@@ -144,6 +148,8 @@ func (r *Router) push(method, path string, h Handler, mhs ...Handler) {
 			for _, h := range r.next {
 				if err := h(c); err != nil {
 					ErrorHandler(c, err)
+					return nil
+				} else if c.done {
 					return nil
 				}
 			}

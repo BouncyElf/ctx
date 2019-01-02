@@ -47,6 +47,12 @@ func (c *Context) Get(k string) (interface{}, bool) {
 	return v, ok
 }
 
+// Done stop the handler chain.
+func (c *Context) Done() error {
+	c.done = true
+	return nil
+}
+
 // Request Method
 
 // Params get the router param with the specific k.
