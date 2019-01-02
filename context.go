@@ -53,6 +53,11 @@ func (c *Context) Done() error {
 	return nil
 }
 
+func (c *Context) Next() error {
+	c.done = false
+	return nil
+}
+
 // Request Method
 
 // Params get the router param with the specific k.
