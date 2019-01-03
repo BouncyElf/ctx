@@ -27,3 +27,19 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	handle := h.NewHttpHandler()
 	handle(w, r)
 }
+
+// Run runs the handlers. If c.abort is true, return nil.
+func (hs Handlers) Run(c *Context) error {
+	if c.abort {
+		return nil
+	}
+	for _, h := range hs {
+		if err := h(c); err != nil {
+			return err
+		}
+		if c.abort {
+			return nil
+		}
+	}
+	return nil
+}

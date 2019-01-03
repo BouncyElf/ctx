@@ -20,6 +20,7 @@ type Context struct {
 	done       bool
 	m          Map
 	params     map[string]string
+	abort      bool
 
 	routerParamsParsed bool
 }
@@ -49,12 +50,7 @@ func (c *Context) Get(k string) (interface{}, bool) {
 
 // Done stop the handler chain.
 func (c *Context) Done() error {
-	c.done = true
-	return nil
-}
-
-func (c *Context) Next() error {
-	c.done = false
+	c.abort = true
 	return nil
 }
 

@@ -125,33 +125,21 @@ func (r *Router) DELETE(path string, h Handler, mhs ...Handler) {
 func (r *Router) push(method, path string, h Handler, mhs ...Handler) {
 	r.r.Handler(method, path, Handler(
 		func(c *Context) error {
-			for _, h := range r.prev {
-				if err := h(c); err != nil {
-					ErrorHandler(c, err)
-					return nil
-				} else if c.done {
-					return nil
-				}
-			}
-			for _, h := range mhs {
-				if err := h(c); err != nil {
-					ErrorHandler(c, err)
-					return nil
-				} else if c.done {
-					return nil
-				}
-			}
-			if err := h(c); err != nil {
+			if err := r.prev.Run(c); err != nil {
 				ErrorHandler(c, err)
 				return nil
 			}
-			for _, h := range r.next {
-				if err := h(c); err != nil {
-					ErrorHandler(c, err)
-					return nil
-				} else if c.done {
-					return nil
-				}
+			if err := Handlers(mhs).Run(c); err != nil {
+				ErrorHandler(c, err)
+				return nil
+			}
+			if err := Handlers([]Handler{h}).Run(c); err != nil {
+				ErrorHandler(c, err)
+				return nil
+			}
+			if err := r.next.Run(c); err != nil {
+				ErrorHandler(c, err)
+				return nil
 			}
 			return nil
 		},
