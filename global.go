@@ -1,25 +1,18 @@
 package ctx
 
-// SuccessJson is the success json format.
-var SuccessJson = Map{}
+// SuccessCB is the c.Success() callback.
+// DO NOT USE DEFAULT, MAKE IT YOURS.
+var SuccessCB = func(*Context, interface{}) error { return nil }
 
-// SuccessKey is the key of the success data.
-var SuccessKey = ""
-
-// ErrorJson is the error json format.
-var ErrorJson = Map{}
-
-// ErrorKey is the key of the error data.
-var ErrorKey = ""
-
-// ErrorCodeKey is the key of the error code.
-var ErrorCodeKey = ""
+// ErrorCB is the c.Error() callback.
+// DO NOT USE DEFAULT, MAKE IT YOURS.
+var ErrorCB = func(*Context, int, interface{}) error { return nil }
 
 // ErrorHandler is the error handler when error occured.
-// DO NOT USE DEFAULT, Make it your owns.
+// DO NOT USE DEFAULT, MAKE IT YOURS.
 var ErrorHandler = func(c *Context, err error) {
 	if c.StatusCode == 0 {
 		c.StatusCode = 500
 	}
-	c.Error(c.StatusCode, err.Error())
+	c.Error(c.StatusCode, err)
 }

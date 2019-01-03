@@ -211,16 +211,13 @@ func (c *Context) SetStatusCode(code int) {
 // type is json, and you can change format by setting ctx.SuccessJson.
 func (c *Context) Success(data interface{}) error {
 	c.SetStatusCode(200)
-	SuccessJson[SuccessKey] = data
-	return c.Json(SuccessJson)
+	return SuccessCB(c, data)
 }
 
 // Error response the current request with the specific format of data. The type
 // is json, and you can change format by setting ctx.ErrorJson.
-func (c *Context) Error(code int, msg string) error {
-	ErrorJson[ErrorCodeKey] = code
-	ErrorJson[ErrorKey] = msg
-	return c.Json(ErrorJson)
+func (c *Context) Error(code int, msg interface{}) error {
+	return ErrorCB(c, code, msg)
 }
 
 // String response the current request with the specific value s.
