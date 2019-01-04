@@ -25,7 +25,7 @@ func (h Handler) NewHttpHandler() http.HandlerFunc {
 // ServeHTTP implements the http.Handler interface.
 func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	handle := h.NewHttpHandler()
-	handle(w, r)
+	handle.ServeHTTP(w, r)
 }
 
 // Run runs the handlers. If c.abort is true, return nil.

@@ -13,6 +13,21 @@ var routerIns *router
 
 func init() {
 	routerIns = new(router)
+	routerIns.r = httprouter.New()
+	routerIns.r.NotFound = Handler(
+		func(c *Context) error {
+			return ErrNotFound
+		},
+	)
+	routerIns.r.MethodNotAllowed = Handler(
+		func(c *Context) error {
+			return ErrMethodNotAllow
+		},
+	)
+	routerIns.r.HandleOPTIONS = true
+	routerIns.r.HandleMethodNotAllowed = true
+	routerIns.r.RedirectTrailingSlash = true
+	routerIns.r.RedirectFixedPath = true
 }
 
 // Router is the http router in ctx. It's the entry of your app.
@@ -122,11 +137,13 @@ func DELETE(path string, h Handler, mhs ...Handler) {
 
 // push register router with httprouter's method `(*httprouter.Router).Handler`.
 func (r *router) push(method, path string, h Handler, mhs ...Handler) {
-	if routerIns.r == nil {
-		routerIns.r = httprouter.New()
-	}
 	routerIns.r.Handler(method, path, Handler(
 		func(c *Context) error {
+			defer func() {
+				if r := recover(); r != nil {
+					PanicHandler(c, r)
+				}
+			}()
 			if err := r.prev.Run(c); err != nil {
 				ErrorHandler(c, err)
 				return nil
