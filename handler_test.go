@@ -22,3 +22,7 @@ func TestNewHttpHandler(t *testing.T) {
 		},
 	)).NewHttpHandler())
 }
+
+func TestHandlerChain(t *testing.T) {
+	// TODO:
+}

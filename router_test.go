@@ -3,23 +3,35 @@ package ctx
 import (
 	"testing"
 
+	"github.com/julienschmidt/httprouter"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestUse(t *testing.T) {
-	r := New()
-	r.Use(func(*Context) error { return nil })
-	assert.Len(t, r.prev, 1)
+	resetRouter()
+	Use(func(*Context) error { return nil })
+	assert.Len(t, routerIns.prev, 1)
 }
 
 func TestPrev(t *testing.T) {
-	r := New()
-	r.Prev(func(*Context) error { return nil })
-	assert.Len(t, r.prev, 1)
+	resetRouter()
+	Prev(func(*Context) error { return nil })
+	assert.Len(t, routerIns.prev, 1)
 }
 
 func TestNext(t *testing.T) {
-	r := New()
-	r.Next(func(*Context) error { return nil })
-	assert.Len(t, r.next, 1)
+	resetRouter()
+	Next(func(*Context) error { return nil })
+	assert.Len(t, routerIns.next, 1)
+}
+
+func TestRouterMethod(t *testing.T) {
+	// TODO:
+}
+
+func resetRouter() {
+	routerIns.r = httprouter.New()
+	routerIns.next = nil
+	routerIns.prev = nil
+	routerIns.s = newServer(":8080", routerIns.r)
 }

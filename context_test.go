@@ -16,3 +16,11 @@ func TestMap(t *testing.T) {
 		},
 	)
 }
+
+func TestContextRequestMethod(t *testing.T) {
+	// TODO:
+}
+
+func TestContextResponseMethod(t *testing.T) {
+	// TODO:
+}
