@@ -1,9 +1,14 @@
+// ctx is a web framework which simply use httprouter as its router,
+// and offer an easier method (or just alias) of the 'net/http'.
 package ctx
 
 import (
 	"errors"
 	"net/http"
 )
+
+// Map is the alias of map[string]interface{}
+type Map map[string]interface{}
 
 // ErrNotFound is the NotFound error.
 // Use this to distinguish error.
