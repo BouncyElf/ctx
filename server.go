@@ -18,3 +18,5 @@ func newServer(addr string, h http.Handler) *server {
 		s: s,
 	}
 }
+
+// TODO: add server conf

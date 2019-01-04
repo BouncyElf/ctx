@@ -9,6 +9,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
+// routerIns is the global instance of router.
 var routerIns *router
 
 func init() {
