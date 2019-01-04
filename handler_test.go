@@ -26,3 +26,7 @@ func TestNewHttpHandler(t *testing.T) {
 func TestHandlerChain(t *testing.T) {
 	// TODO:
 }
+
+func TestErrorPanicHandler(t *testing.T) {
+	// TODO:
+}

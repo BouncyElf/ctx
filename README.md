@@ -1,6 +1,13 @@
 # CTX
 A Go web framework.
 
+## Feature
+- Singleton.
+- Centralized error handling.
+- Centralized panic recover & handling.
+- Gracefully shutdown.
+- Websocket support.
+
 ## Install
 ```bash
 $ go get -u -v github.com/BouncyElf/ctx
@@ -13,11 +20,10 @@ package main
 import "github.com/BouncyElf/ctx"
 
 func main() {
-	r := ctx.New()
-	r.GET("/", func(c *ctx.Context) error {
+	ctx.GET("/", func(c *ctx.Context) error {
 		return c.String("hello, world")
 	})
-	r.Run()
+	ctx.Run()
 }
 ```
 
