@@ -1,5 +1,8 @@
-// ctx is a web framework which simply use httprouter as its router,
+// CTX is a web framework which simply use httprouter as its router,
 // and offer an easier method (or just alias) of the 'net/http'.
+// CTX itself dose not integrate websocket, but if you need this, please go
+// check (github.com/gorilla/websocket)[https://github.com/gorilla/websocket] or
+// a easy one like (github.com/olahol/melody)[https://github.com/olahol/melody].
 package ctx
 
 import (
