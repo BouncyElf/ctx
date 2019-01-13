@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"os"
 	"strconv"
+	"sync"
 
 	"github.com/julienschmidt/httprouter"
 )
@@ -20,6 +21,7 @@ type Context struct {
 	StatusCode int
 	done       bool
 	m          Map
+	mMutex     *sync.Mutex
 	params     map[string]string
 	abort      bool
 
@@ -35,16 +37,22 @@ func NewContext(w http.ResponseWriter, r *http.Request) *Context {
 		formValue: nil,
 		m:         make(Map),
 		params:    make(map[string]string),
+		mMutex:    new(sync.Mutex),
 	}
 }
 
 // Set set a couple of k-v.
 func (c *Context) Set(k string, v interface{}) {
+	c.mMutex.Lock()
+	defer c.mMutex.Unlock()
 	c.m[k] = v
 }
 
 // Get get value from the given k, Get only get the value you Set.
 func (c *Context) Get(k string) (interface{}, bool) {
+	c.mMutex.Lock()
+	defer c.mMutex.Unlock()
+
 	v, ok := c.m[k]
 	return v, ok
 }
