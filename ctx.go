@@ -7,6 +7,7 @@ package ctx
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 )
 
@@ -51,4 +52,12 @@ var PanicHandler = func(c *Context, msg interface{}) {
 		c.StatusCode = 500
 	}
 	c.Error(c.StatusCode, msg)
+}
+
+// e wrap a err into a ctx error.
+func e(msg string, err error) error {
+	if err == nil {
+		return nil
+	}
+	return fmt.Errorf("%s %s: %v", "[CTX]", msg, err)
 }

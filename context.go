@@ -5,6 +5,7 @@ import (
 	"mime/multipart"
 	"net/http"
 	"net/url"
+	"os"
 	"strconv"
 
 	"github.com/julienschmidt/httprouter"
@@ -173,16 +174,10 @@ func (c *Context) Path() string {
 
 // Response Method
 
-// Json response the current request with json.
-func (c *Context) Json(data interface{}) error {
-	if ct := c.Res.Header().Get("Content-Type"); ct == "" {
-		c.Res.Header().Set("Content-Type", "application/json")
-	}
-	j, err := json.Marshal(data)
-	if err != nil {
-		return err
-	}
-	return c.Write(j)
+// SetStatusCode set the StatusCode with the specific code.
+func (c *Context) SetStatusCode(code int) {
+	c.StatusCode = code
+	c.Res.WriteHeader(code)
 }
 
 // Redirect response the current request and tell the host to request other url.
@@ -197,10 +192,39 @@ func (c *Context) Redirect(location string, code ...int) error {
 	return nil
 }
 
-// SetStatusCode set the StatusCode with the specific code.
-func (c *Context) SetStatusCode(code int) {
-	c.StatusCode = code
-	c.Res.WriteHeader(code)
+// String response the current request with the specific value s.
+func (c *Context) String(s string) error {
+	return e("response string error", c.Write([]byte(s)))
+}
+
+// Json response the current request with json.
+func (c *Context) Json(data interface{}) error {
+	if ct := c.Res.Header().Get("Content-Type"); ct == "" {
+		c.Res.Header().Set("Content-Type", "application/json")
+	}
+	j, err := json.Marshal(data)
+	if err != nil {
+		return e("response json error", err)
+	}
+	return e("response json error", c.Write(j))
+}
+
+// HTML response the current request with HTML at the filepath.
+func (c *Context) HTML(filepath string) error {
+	if ct := c.Res.Header().Get("Content-Type"); ct == "" {
+		c.Res.Header().Set("Content-Type", "text/html")
+	}
+	return c.ServeFile(filepath)
+}
+
+// ServeFile response the current request with File at the filepath.
+func (c *Context) ServeFile(filepath string) error {
+	if _, err := os.Stat(filepath); err != nil {
+		return e("response file error", err)
+	}
+	http.ServeFile(c.Res, c.Req, filepath)
+	c.done = true
+	return nil
 }
 
 // Success response the current request with the specific format of data. The
@@ -214,11 +238,6 @@ func (c *Context) Success(data interface{}) error {
 // is json, and you can change format by setting ctx.ErrorJson.
 func (c *Context) Error(code int, msg interface{}) error {
 	return ErrorCB(c, code, msg)
-}
-
-// String response the current request with the specific value s.
-func (c *Context) String(s string) error {
-	return c.Write([]byte(s))
 }
 
 // Write response the current request with data in its body.
