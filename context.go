@@ -49,8 +49,8 @@ func (c *Context) Get(k string) (interface{}, bool) {
 	return v, ok
 }
 
-// Done stop the handler chain.
-func (c *Context) Done() error {
+// Abort stop the handler chain.
+func (c *Context) Abort() error {
 	c.abort = true
 	return nil
 }
