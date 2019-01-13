@@ -175,9 +175,13 @@ func (c *Context) Path() string {
 // Response Method
 
 // SetStatusCode set the StatusCode with the specific code.
+// NOTICE the code can only set once.
 func (c *Context) SetStatusCode(code int) {
-	c.StatusCode = code
-	c.Res.WriteHeader(code)
+	if c.StatusCode == 0 {
+		c.StatusCode = code
+		c.Res.WriteHeader(code)
+		return
+	}
 }
 
 // Redirect response the current request and tell the host to request other url.
