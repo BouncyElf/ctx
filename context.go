@@ -2,6 +2,8 @@ package ctx
 
 import (
 	"encoding/json"
+	"io"
+	"io/ioutil"
 	"mime/multipart"
 	"net/http"
 	"net/url"
@@ -82,6 +84,17 @@ func (c *Context) Params(k string) string {
 // ReqHeader return the request header.
 func (c *Context) ReqHeader() http.Header {
 	return c.Req.Header
+}
+
+// ReqBody return the request body.
+func (c *Context) ReqBody() io.ReadCloser {
+	return c.Req.Body
+}
+
+// ReqBodyByte return the request body as byte slice, and an error when read
+// body error.
+func (c *Context) ReqBodyByte() ([]byte, error) {
+	return ioutil.ReadAll(c.Req.Body)
 }
 
 // Exists returns if the k exists in query string or form value.
