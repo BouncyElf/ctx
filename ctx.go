@@ -23,15 +23,15 @@ var ErrNotFound = errors.New("404 Not Found")
 var ErrMethodNotAllow = errors.New("405 Method Not Allow")
 
 // SuccessCB is the c.Success() callback.
-// DO NOT USE DEFAULT, MAKE IT YOURS.
+// NOTE: DO NOT USE DEFAULT, MAKE IT YOURS.
 var SuccessCB = func(*Context, interface{}) error { return nil }
 
 // ErrorCB is the c.Error() callback.
-// DO NOT USE DEFAULT, MAKE IT YOURS.
+// NOTE: DO NOT USE DEFAULT, MAKE IT YOURS.
 var ErrorCB = func(*Context, int, interface{}) error { return nil }
 
 // ErrorHandler is the error handler when error occured.
-// DO NOT USE DEFAULT, MAKE IT YOURS.
+// NOTE: DO NOT USE DEFAULT, MAKE IT YOURS.
 var ErrorHandler = func(c *Context, err error) {
 	if err == ErrNotFound {
 		c.SetStatusCode(http.StatusNotFound)
@@ -46,7 +46,7 @@ var ErrorHandler = func(c *Context, err error) {
 }
 
 // PanicHandler is the panic handler when panic occurred.
-// DO NOT USE DEFAULT, MAKE IT YOURS.
+// NOTE: DO NOT USE DEFAULT, MAKE IT YOURS.
 var PanicHandler = func(c *Context, msg interface{}) {
 	if c.StatusCode == 0 {
 		c.StatusCode = 500

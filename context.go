@@ -30,6 +30,7 @@ type Context struct {
 
 // NewContext returns a empty context.
 func NewContext(w http.ResponseWriter, r *http.Request) *Context {
+	// TODO: use sync pool to reuse the context
 	return &Context{
 		Res:       w,
 		Req:       r,
@@ -76,6 +77,11 @@ func (c *Context) Params(k string) string {
 		c.routerParamsParsed = true
 	}
 	return c.params[k]
+}
+
+// ReqHeader return the request header.
+func (c *Context) ReqHeader() http.Header {
+	return c.Req.Header
 }
 
 // Exists returns if the k exists in query string or form value.
@@ -183,13 +189,18 @@ func (c *Context) Path() string {
 // Response Method
 
 // SetStatusCode set the StatusCode with the specific code.
-// NOTICE the code can only set once.
+// NOTE: the code can only set once.
 func (c *Context) SetStatusCode(code int) {
 	if c.StatusCode == 0 {
 		c.StatusCode = code
 		c.Res.WriteHeader(code)
 		return
 	}
+}
+
+// ResHeader return the response's header
+func (c *Context) ResHeader() http.Header {
+	return c.Res.Header()
 }
 
 // Redirect response the current request and tell the host to request other url.
