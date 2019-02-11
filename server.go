@@ -20,4 +20,3 @@ func newServer(addr string, h http.Handler) *server {
 }
 
 // TODO: make server mine
-// TODO: use Keep-Alive to reuse tcp conn
