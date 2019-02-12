@@ -6,7 +6,6 @@
 - Centralized error handling.
 - Centralized panic recover & handling.
 - Gracefully shutdown.
-- Websocket support.
 
 ## Install
 ```bash
