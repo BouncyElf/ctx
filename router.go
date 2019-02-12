@@ -144,6 +144,7 @@ func (r *router) push(method, path string, h Handler, mhs ...Handler) {
 				if r := recover(); r != nil {
 					PanicHandler(c, r)
 				}
+				contextPool.Put(c)
 			}()
 			if err := r.prev.Run(c); err != nil {
 				ErrorHandler(c, err)

@@ -9,12 +9,12 @@ type Handler func(*Context) error
 type Handlers []Handler
 
 // NewHttpHandler convert Handler into a http.HandlerFunc.
-// To use this method, you need realize that the context inside can not inherit
-// other context. You can only use this method when this handler is the
+// NOTE: To use this method, you need realize that the context inside can not
+// inherit other context. You can only use this method when this handler is the
 // beginning of a handler chain or you really understand what you are doing.
 func (h Handler) NewHttpHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		ctx := NewContext(w, r)
+		ctx := getContext(w, r)
 		err := h(ctx)
 		if err != nil {
 			ErrorHandler(ctx, err)

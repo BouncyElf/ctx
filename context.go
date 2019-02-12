@@ -14,6 +14,8 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
+var contextPool *sync.Pool
+
 // Context is context of the current http request.
 type Context struct {
 	Res        http.ResponseWriter
@@ -30,12 +32,22 @@ type Context struct {
 	routerParamsParsed bool
 }
 
+func init() {
+	contextPool = new(sync.Pool)
+	contextPool.New = func() interface{} {
+		return NewContext()
+	}
+}
+
+func getContext(w http.ResponseWriter, r *http.Request) *Context {
+	c := contextPool.Get().(*Context)
+	c.reset(w, r)
+	return c
+}
+
 // NewContext returns a empty context.
-func NewContext(w http.ResponseWriter, r *http.Request) *Context {
-	// TODO: use sync pool to reuse the context
+func NewContext() *Context {
 	return &Context{
-		Res:       w,
-		Req:       r,
 		urlValue:  nil,
 		formValue: nil,
 		m:         make(Map),
