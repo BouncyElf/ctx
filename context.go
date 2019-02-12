@@ -44,10 +44,28 @@ func NewContext(w http.ResponseWriter, r *http.Request) *Context {
 	}
 }
 
+// reset resets the context
+func (c *Context) reset(w http.ResponseWriter, r *http.Request) {
+	c.Res = w
+	c.Req = r
+
+	c.m = make(Map)
+	c.params = make(map[string]string)
+	c.mMutex = new(sync.Mutex)
+
+	c.abort = false
+	c.urlValue = nil
+	c.formValue = nil
+	c.StatusCode = 0
+	c.done = false
+	c.routerParamsParsed = false
+}
+
 // Set set a couple of k-v.
 func (c *Context) Set(k string, v interface{}) {
 	c.mMutex.Lock()
 	defer c.mMutex.Unlock()
+
 	c.m[k] = v
 }
 
