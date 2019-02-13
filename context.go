@@ -14,6 +14,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
+// contextPool is the sync pool to reuse context
 var contextPool *sync.Pool
 
 // Context is context of the current http request.
@@ -200,13 +201,13 @@ func (c *Context) SetCookie(cookie *http.Cookie) {
 	http.SetCookie(c.Res, cookie)
 }
 
-// File returns the formfile with the specific name.
-func (c *Context) File(name string) (
+// File returns the formfile with the specific key.
+func (c *Context) File(key string) (
 	multipart.File,
 	*multipart.FileHeader,
 	error,
 ) {
-	return c.Req.FormFile(name)
+	return c.Req.FormFile(key)
 }
 
 // RemoteAddr returns RemoteAddr of the current request.
