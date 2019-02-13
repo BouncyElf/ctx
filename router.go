@@ -140,29 +140,16 @@ func DELETE(path string, h Handler, mhs ...Handler) {
 func (r *router) push(method, path string, h Handler, mhs ...Handler) {
 	routerIns.r.Handler(method, path, Handler(
 		func(c *Context) error {
-			defer func() {
-				if r := recover(); r != nil {
-					PanicHandler(c, r)
-				}
-				contextPool.Put(c)
-			}()
 			if err := r.prev.Run(c); err != nil {
-				ErrorHandler(c, err)
-				return nil
+				return err
 			}
 			if err := Handlers(mhs).Run(c); err != nil {
-				ErrorHandler(c, err)
-				return nil
+				return err
 			}
 			if err := Handlers([]Handler{h}).Run(c); err != nil {
-				ErrorHandler(c, err)
-				return nil
+				return err
 			}
-			if err := r.next.Run(c); err != nil {
-				ErrorHandler(c, err)
-				return nil
-			}
-			return nil
+			return r.next.Run(c)
 		},
 	))
 }

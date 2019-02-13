@@ -28,7 +28,19 @@ var SuccessCB = func(*Context, interface{}) error { return nil }
 
 // ErrorCB is the c.Error() callback.
 // NOTE: DO NOT USE DEFAULT, MAKE IT YOURS.
-var ErrorCB = func(*Context, int, interface{}) error { return nil }
+var ErrorCB = func(c *Context, code int, msg interface{}) error {
+	innerError := ""
+	switch msg.(type) {
+	case string:
+		innerError = msg.(string)
+	case error:
+		innerError = msg.(error).Error()
+	default:
+		innerError = "internal server error, unsupported error message type"
+	}
+	http.Error(c.Res, innerError, code)
+	return nil
+}
 
 // ErrorHandler is the error handler when error occured.
 // NOTE: DO NOT USE DEFAULT, MAKE IT YOURS.

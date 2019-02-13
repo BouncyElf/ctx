@@ -14,10 +14,16 @@ type Handlers []Handler
 // beginning of a handler chain or you really understand what you are doing.
 func (h Handler) NewHttpHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		ctx := getContext(w, r)
-		err := h(ctx)
+		c := getContext(w, r)
+		defer func() {
+			if msg := recover(); msg != nil {
+				PanicHandler(c, msg)
+			}
+			contextPool.Put(c)
+		}()
+		err := h(c)
 		if err != nil {
-			ErrorHandler(ctx, err)
+			ErrorHandler(c, err)
 		}
 	}
 }
