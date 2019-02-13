@@ -39,8 +39,13 @@ func init() {
 	}
 }
 
+// getContext gets a Context from the pool
 func getContext(w http.ResponseWriter, r *http.Request) *Context {
-	c := contextPool.Get().(*Context)
+	c, ok := contextPool.Get().(*Context)
+	if !ok {
+		// NOTE: should not be here, avoid panic
+		c = NewContext()
+	}
 	c.reset(w, r)
 	return c
 }
@@ -315,7 +320,10 @@ func (c *Context) Write(data []byte) error {
 		if c.StatusCode == 0 {
 			c.SetStatusCode(200)
 		}
-		c.Res.Write(data)
+		_, err := c.Res.Write(data)
+		if err != nil {
+			return e("write data error", err)
+		}
 		c.done = true
 	}
 	return nil
