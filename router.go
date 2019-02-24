@@ -78,26 +78,12 @@ func Use(hs ...Handler) {
 // Prev register `hs` as a banch of prev handler. `hs` will be execute before
 // the handler.
 func Prev(hs ...Handler) {
-	if len(hs) == 0 {
-		return
-	}
-	if routerIns.prev == nil {
-		routerIns.prev = hs
-		return
-	}
 	routerIns.prev = append(routerIns.prev, hs...)
 }
 
 // Next register `hs` as a banch of next handler. `hs` will be execute after the
 // handler.
 func Next(hs ...Handler) {
-	if len(hs) == 0 {
-		return
-	}
-	if routerIns.next == nil {
-		routerIns.next = hs
-		return
-	}
 	routerIns.next = append(routerIns.next, hs...)
 }
 
