@@ -15,11 +15,9 @@ import (
 type Map map[string]interface{}
 
 // ErrNotFound is the NotFound error.
-// Use this to distinguish error.
 var ErrNotFound = errors.New("404 Not Found")
 
 // ErrMethodNotAllow is the MethodNotAllowed error.
-// Use this to distinguish error.
 var ErrMethodNotAllow = errors.New("405 Method Not Allow")
 
 // SuccessCB is the c.Success() callback.
@@ -42,7 +40,7 @@ var ErrorCB = func(c *Context, code int, msg interface{}) error {
 	return nil
 }
 
-// ErrorHandler is the error handler when error occured.
+// ErrorHandler is the centralized error handler.
 // NOTE: DO NOT USE DEFAULT, MAKE IT YOURS.
 var ErrorHandler = func(c *Context, err error) {
 	if err == ErrNotFound {
@@ -57,7 +55,7 @@ var ErrorHandler = func(c *Context, err error) {
 	}
 }
 
-// PanicHandler is the panic handler when panic occurred.
+// PanicHandler is the centralized panic handler.
 // NOTE: DO NOT USE DEFAULT, MAKE IT YOURS.
 var PanicHandler = func(c *Context, msg interface{}) {
 	if c.StatusCode == 0 {
@@ -66,7 +64,7 @@ var PanicHandler = func(c *Context, msg interface{}) {
 	c.Error(c.StatusCode, msg)
 }
 
-// e wrap a err into a ctx error.
+// e returns a ctx error.
 func e(msg string, err error) error {
 	if err == nil {
 		return nil

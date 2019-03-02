@@ -29,6 +29,8 @@ type Context struct {
 	params     map[string]string
 	abort      bool
 
+	mu *sync.Mutex
+
 	routerParamsParsed bool
 }
 
@@ -57,6 +59,7 @@ func NewContext() *Context {
 		formValue: nil,
 		m:         make(Map),
 		params:    make(map[string]string),
+		mu:        new(sync.Mutex),
 	}
 }
 
@@ -77,11 +80,13 @@ func (c *Context) reset(w http.ResponseWriter, r *http.Request) {
 }
 
 // Set set a couple of k-v.
+// NOTE: not thread-safe.
 func (c *Context) Set(k string, v interface{}) {
 	c.m[k] = v
 }
 
 // Get get value from the given k, Get only get the value you Set.
+// NOTE: not thread-safe.
 func (c *Context) Get(k string) (interface{}, bool) {
 	v, ok := c.m[k]
 	return v, ok
@@ -91,6 +96,13 @@ func (c *Context) Get(k string) (interface{}, bool) {
 func (c *Context) Abort() error {
 	c.abort = true
 	return nil
+}
+
+// Ensure make the operation thread-safe.
+func (c *Context) Ensure(f func()) {
+	c.mu.Lock()
+	f()
+	c.mu.Unlock()
 }
 
 // Request Method
