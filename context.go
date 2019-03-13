@@ -17,7 +17,7 @@ import (
 // contextPool is the sync pool to reuse context
 var contextPool *sync.Pool
 
-// Context is context of the current http request.
+// Context is context of the current http request
 type Context struct {
 	Res        http.ResponseWriter
 	Req        *http.Request
@@ -45,14 +45,14 @@ func init() {
 func getContext(w http.ResponseWriter, r *http.Request) *Context {
 	c, ok := contextPool.Get().(*Context)
 	if !ok {
-		// NOTE: should not be here, avoid panic
+		// should not be here, avoid panic
 		c = NewContext()
 	}
 	c.reset(w, r)
 	return c
 }
 
-// NewContext returns a empty context.
+// NewContext returns a empty context
 func NewContext() *Context {
 	return &Context{
 		urlValue:  nil,
@@ -80,13 +80,11 @@ func (c *Context) reset(w http.ResponseWriter, r *http.Request) {
 }
 
 // Set set a couple of k-v.
-// NOTE: not thread-safe.
 func (c *Context) Set(k string, v interface{}) {
 	c.m[k] = v
 }
 
 // Get get value from the given k, Get only get the value you Set.
-// NOTE: not thread-safe.
 func (c *Context) Get(k string) (interface{}, bool) {
 	v, ok := c.m[k]
 	return v, ok
@@ -138,7 +136,7 @@ func (c *Context) ReqBodyByte() ([]byte, error) {
 
 // Exists returns if the k exists in query string or form value.
 func (c *Context) Exists(k string) bool {
-	_ = c.Query("")
+	c.Query("")
 	formValue := map[string][]string(c.formValue)
 	urlValue := map[string][]string(c.urlValue)
 	if len(formValue[k]) != 0 {
@@ -304,6 +302,7 @@ func (c *Context) ServeFile(filepath string) error {
 
 // Success response the current request with the specific format of data. The
 // type is json, and you can change format by setting ctx.SuccessJson.
+// NOTE: implement your own SuccessCB before use *Context.Success
 func (c *Context) Success(data interface{}) error {
 	c.SetStatusCode(200)
 	return SuccessCB(c, data)
@@ -311,6 +310,7 @@ func (c *Context) Success(data interface{}) error {
 
 // Error response the current request with the specific format of data. The type
 // is json, and you can change format by setting ctx.ErrorJson.
+// NOTE: implement your own ErrorCB before use *Context.Error
 func (c *Context) Error(code int, msg interface{}) error {
 	return ErrorCB(c, code, msg)
 }
