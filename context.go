@@ -79,15 +79,24 @@ func (c *Context) reset(w http.ResponseWriter, r *http.Request) {
 	c.routerParamsParsed = false
 }
 
-// Set set a couple of k-v.
+// Set set a couple of k v to a custom map.
 func (c *Context) Set(k string, v interface{}) {
 	c.m[k] = v
 }
 
-// Get get value from the given k, Get only get the value you Set.
+// Get get value from the custom map with the specific key.
 func (c *Context) Get(k string) (interface{}, bool) {
 	v, ok := c.m[k]
 	return v, ok
+}
+
+// Get get value from the custom map with the specific key. return nil if the
+// value not exists.
+func (c *Context) MustGet(k string) interface{} {
+	if v, ok := c.m[k]; ok {
+		return v
+	}
+	return nil
 }
 
 // Abort stop the handler chain.
